@@ -27,11 +27,22 @@ export function DatePickerForm() {
     resolver: zodResolver(FormSchema),
   });
 
+  const startDate = form.watch("start"); // Observa el valor del campo "start"
+
   function onSubmit(data: z.infer<typeof FormSchema>) {
     // Set 'dob' to midnight
     data.start.setUTCHours(0, 0, 0, 0);
     // Set 'end' to one minute before midnight of the next day
     data.end.setUTCHours(23, 59, 59, 999);
+
+    if (data.end < data.start) {
+      form.setError("end", {
+        type: "manual",
+        message: "Seleccione una fecha valida",
+      });
+
+      return;
+    }
 
     toast({
       title: "You submitted the following values:",
@@ -118,7 +129,7 @@ export function DatePickerForm() {
                   <PopoverContent align="start" className="w-auto p-0">
                     <Calendar
                       initialFocus
-                      disabled={(date) => date > new Date() || date < new Date("2022-01-01")}
+                      disabled={(date) => date > new Date() || date < startDate}
                       mode="single"
                       selected={field.value}
                       // @ts-ignore
